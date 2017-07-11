@@ -38,3 +38,17 @@ function Set-JavaToolOptionsEnvironmentVariable {
         }
     }
 }
+
+function Disable-JavaUpdate {
+    param (
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
+    )
+    begin {
+        $JavaUpdateRegistryKeyPath = "HKLM:\SOFTWARE\Wow6432Node\JavaSoft\Java Update\Policy\jucheck"
+    }
+    process {
+        Invoke-Command -ComputerName $ComputerName -ScriptBlock {
+            New-ItemProperty -Path $Using:JavaUpdateRegistryKeyPath -Name EnableAutoUpdateCheck -PropertyType DWORD -Value 0
+        }
+    }
+}
