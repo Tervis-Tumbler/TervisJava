@@ -27,6 +27,7 @@
     }
 }
 
+function Set-JavaToolOptionsEnvironmentVariable {
     param (
         [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
     )
