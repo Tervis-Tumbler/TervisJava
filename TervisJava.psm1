@@ -13,13 +13,14 @@
         if (-not (Test-Path -Path $JavaDeploymentRemotePath)) {
             New-Item -Type Directory -Path $JavaDeploymentRemotePath | Out-Null
         }
-        Copy-Item -Path $JavaDeploymentRuleSetSourcePath -Destination $JavaDeploymentPath -Force
-        Copy-Item -Path $JavaCertificateSourcePath -Destination $JavaDeploymentPath -Force
+        Copy-Item -Path $JavaDeploymentRuleSetSourcePath -Destination $JavaDeploymentRemotePath -Force
+        Copy-Item -Path $JavaCertificateSourcePath -Destination $JavaDeploymentRemotePath -Force
 
         Invoke-Command -ComputerName $ComputerName -ScriptBlock {
-            Import-Certificate -FilePath $Using:JavaDeploymentPath\TervisTumbler.cer -CertStoreLocation 'Cert:\LocalMachine\Root'        
+            $CertPath = (Join-Path $Using:JavaDeploymentPath TervisTumbler.cer)
+            Import-Certificate -FilePath $CertPath -CertStoreLocation 'Cert:\LocalMachine\Root' | Out-Null    
             if (Test-Path -Path "C:\Program Files\Java\jre7\bin\keytool.exe") {
-                . "C:\Program Files\Java\jre7\bin\keytool.exe" -importcert -file $Using:JavaDeploymentPath\TervisTumbler.cer -alias tervisselfsigned -keystore 'C:\Program Files (x86)\Java\jre7\lib\security\cacerts' -storepass $Using:JavaKeystoreCredential -noprompt
+                . "C:\Program Files\Java\jre7\bin\keytool.exe" -importcert -file $CertPath -alias tervisselfsigned -keystore 'C:\Program Files (x86)\Java\jre7\lib\security\cacerts' -storepass $Using:JavaKeystoreCredential -noprompt | Out-Null
             } else {
                 throw "Keytool.exe not found in C:\Program Files\Java\jre7\bin"
             }
