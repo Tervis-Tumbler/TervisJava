@@ -48,7 +48,11 @@ function Disable-JavaUpdate {
     }
     process {
         Invoke-Command -ComputerName $ComputerName -ScriptBlock {
+            New-Item -Name JavaSoft -Path HKLM:\SOFTWARE\WOW6432Node
+            New-Item -Name "Java Update" -Path HKLM:\SOFTWARE\WOW6432Node\JavaSoft
+            New-Item -Name Policy -Path "HKLM:\SOFTWARE\WOW6432Node\JavaSoft\Java Update"
+            New-Item -Name jucheck -Path 'HKLM:\SOFTWARE\WOW6432Node\JavaSoft\Java Update\Policy'
             New-ItemProperty -Path $Using:JavaUpdateRegistryKeyPath -Name EnableAutoUpdateCheck -PropertyType DWORD -Value 0
-        }
+        } | Out-Null
     }
 }
