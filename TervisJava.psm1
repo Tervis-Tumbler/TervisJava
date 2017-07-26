@@ -44,7 +44,9 @@ function Disable-JavaUpdate {
         [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
     )
     begin {
-        $JavaUpdateRegistryKeyPath = "HKLM:\SOFTWARE\Wow6432Node\JavaSoft\Java Update\Policy\jucheck"
+        $Java32UpdateRegistryKeyPath = "HKLM:\SOFTWARE\Wow6432Node\JavaSoft\Java Update\Policy\jucheck"
+        $Java64UpdateRegistryKeyPath = "HKLM:\SOFTWARE\JavaSoft\Java Update\Policy\jucheck"
+        $WoW6432RunRegistryKeyPath = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run"
     }
     process {
         Invoke-Command -ComputerName $ComputerName -ScriptBlock {
@@ -52,7 +54,13 @@ function Disable-JavaUpdate {
             New-Item -Name "Java Update" -Path HKLM:\SOFTWARE\WOW6432Node\JavaSoft
             New-Item -Name Policy -Path "HKLM:\SOFTWARE\WOW6432Node\JavaSoft\Java Update"
             New-Item -Name jucheck -Path 'HKLM:\SOFTWARE\WOW6432Node\JavaSoft\Java Update\Policy'
-            New-ItemProperty -Path $Using:JavaUpdateRegistryKeyPath -Name EnableAutoUpdateCheck -PropertyType DWORD -Value 0
+            New-ItemProperty -Path $Using:Java32UpdateRegistryKeyPath -Name EnableAutoUpdateCheck -PropertyType DWORD -Value 0
+            New-Item -Name JavaSoft -Path HKLM:\SOFTWARE\
+            New-Item -Name "Java Update" -Path HKLM:\SOFTWARE\JavaSoft
+            New-Item -Name Policy -Path "HKLM:\SOFTWARE\JavaSoft\Java Update"
+            New-Item -Name jucheck -Path 'HKLM:\SOFTWARE\JavaSoft\Java Update\Policy'
+            New-ItemProperty -Path $Using:Java64UpdateRegistryKeyPath -Name EnableAutoUpdateCheck -PropertyType DWORD -Value 0
+            Remove-ItemProperty -Path $Using:WoW6432RunRegistryKeyPath -Name SunJavaUpdateSched
         } | Out-Null
     }
 }
