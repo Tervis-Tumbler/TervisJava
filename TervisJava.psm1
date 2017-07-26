@@ -51,8 +51,10 @@ function Disable-JavaUpdate {
         $WoW6432RunRegistryKeyPath = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run"
     }
     process {
+        Write-Verbose "Disabling automatic Java updates on $ComputerName"
         Invoke-Command -ComputerName $ComputerName -ScriptBlock {
-            New-Item -Name JavaSoft -Path HKLM:\SOFTWARE\WOW6432Node
+            $ErrorActionPreference = "SilentlyContinue"
+            New-Item -Name JavaSoft -Path HKLM:\SOFTWARE\WOW6432Node 
             New-Item -Name "Java Update" -Path HKLM:\SOFTWARE\WOW6432Node\JavaSoft
             New-Item -Name Policy -Path "HKLM:\SOFTWARE\WOW6432Node\JavaSoft\Java Update"
             New-Item -Name jucheck -Path 'HKLM:\SOFTWARE\WOW6432Node\JavaSoft\Java Update\Policy'
@@ -63,6 +65,7 @@ function Disable-JavaUpdate {
             New-Item -Name jucheck -Path 'HKLM:\SOFTWARE\JavaSoft\Java Update\Policy'
             New-ItemProperty -Path $Using:Java64UpdateRegistryKeyPath -Name EnableAutoUpdateCheck -PropertyType DWORD -Value 0
             Remove-ItemProperty -Path $Using:WoW6432RunRegistryKeyPath -Name SunJavaUpdateSched
-        } | Out-Null
+            $ErrorActionPreference = "Continue"
+        }
     }
 }
