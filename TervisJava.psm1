@@ -41,6 +41,18 @@ function Set-JavaToolOptionsEnvironmentVariable {
     }
 }
 
+function Set-JavaHomeEnvironmentVariable {
+    param (
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
+    )
+    process {
+        $JavaHomeDirectory = Get-JavaHomeDirectory -ComputerName $ComputerName
+        Invoke-Command -ComputerName $ComputerName -ScriptBlock {
+            [Environment]::SetEnvironmentVariable("JAVA_HOME", $using:JavaHomeDirectory, "Machine")
+        }
+    }
+}
+
 function Disable-JavaUpdate {
     param (
         [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
@@ -66,6 +78,38 @@ function Disable-JavaUpdate {
             New-ItemProperty -Path $Using:Java64UpdateRegistryKeyPath -Name EnableAutoUpdateCheck -PropertyType DWORD -Value 0
             Remove-ItemProperty -Path $Using:WoW6432RunRegistryKeyPath -Name SunJavaUpdateSched
             $ErrorActionPreference = "Continue"
+        }
+    }
+}
+
+function Get-JavaHomeDirectory {
+    param (
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
+    )
+    begin {
+        $JavaRootDir32 = "C:\Program Files (x86)\Java"
+        $JavaRootDir64 = "C:\Program Files\Java"
+    }
+    process {
+        $JavaRootDir32Remote = $JavaRootDir32 | ConvertTo-RemotePath -ComputerName $ComputerName
+        $JavaRootDir64Remote = $JavaRootDir64 | ConvertTo-RemotePath -ComputerName $ComputerName
+        $JavaExecutables32 = Get-ChildItem -Path $JavaRootDir32Remote\j*\bin\Java.exe -ErrorAction SilentlyContinue
+        $JavaExecutables64 = Get-ChildItem -Path $JavaRootDir64Remote\j*\bin\Java.exe -ErrorAction SilentlyContinue
+
+        if ($JavaExecutables32) {
+            return $JavaExecutables32 | 
+                sort {$_.VersionInfo.FileVersion} | 
+                select -Last 1 -ExpandProperty Directory | 
+                Split-Path -Parent | 
+                ConvertFrom-RemotePath
+        } elseif ($JavaExecutables64) {
+            return $JavaExecutables64 | 
+                sort {$_.VersionInfo.FileVersion} | 
+                select -Last 1 -ExpandProperty Directory | 
+                Split-Path -Parent | 
+                ConvertFrom-RemotePath
+        } else {
+            Write-Warning "No Java home directory found on $ComputerName."
         }
     }
 }
