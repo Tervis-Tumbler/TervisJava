@@ -25,7 +25,7 @@
                 $KeyStorePath = "$using:JavaHomeDirectory\lib\security\cacerts"
                 Import-Certificate -FilePath $CertPath -CertStoreLocation 'Cert:\LocalMachine\Root' | Out-Null    
                 if (Test-Path -Path $using:JavaHomeDirectory\bin\keytool.exe) {
-                    . "$KeytoolPath" -importcert -file $CertPath -alias tervisselfsigned -keystore $KeyStorePath -storepass $Using:JavaKeystoreCredential -noprompt # | Out-Null
+                    . "$KeytoolPath" -importcert -file $CertPath -alias tervisselfsigned -keystore $KeyStorePath -storepass $Using:JavaKeystoreCredential -noprompt | Out-Null
                 } else {
                     throw "Keytool.exe not found in $using:JavaHomeDirectory\bin\ on $using:ComputerName"
                 }
