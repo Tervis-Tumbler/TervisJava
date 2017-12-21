@@ -1,4 +1,4 @@
-﻿function Install-TervisJava7DeploymentRuleSet {
+﻿function Install-TervisJavaDeploymentRuleSet {
     param (
         [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
     )
@@ -16,15 +16,19 @@
         Copy-Item -Path $JavaDeploymentRuleSetSourcePath -Destination $JavaDeploymentRemotePath -Force
         Copy-Item -Path $JavaCertificateSourcePath -Destination $JavaDeploymentRemotePath -Force
 
-        Invoke-Command -ComputerName $ComputerName -ScriptBlock {
-            $CertPath = (Join-Path $Using:JavaDeploymentPath TervisTumbler.cer)
-            Import-Certificate -FilePath $CertPath -CertStoreLocation 'Cert:\LocalMachine\Root' | Out-Null    
-            if (Test-Path -Path "C:\Program Files (x86)\Java\jre7\bin\keytool.exe") {
-                . "C:\Program Files (x86)\Java\jre7\bin\keytool.exe" -importcert -file $CertPath -alias tervisselfsigned -keystore 'C:\Program Files (x86)\Java\jre7\lib\security\cacerts' -storepass $Using:JavaKeystoreCredential -noprompt | Out-Null
-            } elseif (Test-Path -Path "C:\Program Files\Java\jre7\bin\keytool.exe") {
-                . "C:\Program Files\Java\jre7\bin\keytool.exe" -importcert -file $CertPath -alias tervisselfsigned -keystore 'C:\Program Files (x86)\Java\jre7\lib\security\cacerts' -storepass $Using:JavaKeystoreCredential -noprompt | Out-Null
-            } else {
-                throw "Keytool.exe not found in C:\Program Files\Java\jre7\bin or C:\Program Files (x86)\Java\jre7\bin"
+        $JavaHomeDirectory = Get-JavaHomeDirectory -ComputerName $ComputerName
+
+        if ($JavaHomeDirectory) {
+            Invoke-Command -ComputerName $ComputerName -ScriptBlock {
+                $CertPath = (Join-Path $Using:JavaDeploymentPath TervisTumbler.cer)
+                $KeyToolPath = "$using:JavaHomeDirectory\bin\keytool.exe"
+                $KeyStorePath = "$using:JavaHomeDirectory\lib\security\cacerts"
+                Import-Certificate -FilePath $CertPath -CertStoreLocation 'Cert:\LocalMachine\Root' | Out-Null    
+                if (Test-Path -Path $using:JavaHomeDirectory\bin\keytool.exe) {
+                    . "$KeytoolPath" -importcert -file $CertPath -alias tervisselfsigned -keystore $KeyStorePath -storepass $Using:JavaKeystoreCredential -noprompt # | Out-Null
+                } else {
+                    throw "Keytool.exe not found in $using:JavaHomeDirectory\bin\ on $using:ComputerName"
+                }
             }
         }
     }
