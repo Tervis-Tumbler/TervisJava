@@ -39,6 +39,7 @@ function Set-JavaToolOptionsEnvironmentVariable {
         [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
     )
     process {
+        Write-Verbose "$($ComputerName): Setting JAVA_TOOL_OPTIONS to '-Djava.vendor=`"Sun Microsystems Inc.`"'"
         Invoke-Command -ComputerName $ComputerName -ScriptBlock {
             [Environment]::SetEnvironmentVariable( "JAVA_TOOL_OPTIONS", '-Djava.vendor="Sun Microsystems Inc."', "Machine" )
         }
@@ -51,6 +52,7 @@ function Set-JavaHomeEnvironmentVariable {
     )
     process {
         $JavaHomeDirectory = Get-JavaHomeDirectory -ComputerName $ComputerName
+        Write-Verbose "$($ComputerName): Setting JAVA_HOME to $JavaHomeDirectory"
         Invoke-Command -ComputerName $ComputerName -ScriptBlock {
             [Environment]::SetEnvironmentVariable("JAVA_HOME", $using:JavaHomeDirectory, "Machine")
         }
